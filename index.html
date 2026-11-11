@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>小狐狸启蒙乐园</title>
+<style>
+:root{
+  --o1:#FFF4E3; --o2:#FFE0B2; --o3:#FFB74D; --o4:#FF9100; --o5:#F57C00; --o6:#E65100;
+  --ink:#6B3A00; --card:#FFFDF8; --ok:#4CAF50;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+html,body{margin:0;height:100%;overflow:hidden;touch-action:manipulation}
+body{
+  font-family:ui-rounded,"SF Pro Rounded","PingFang SC","HarmonyOS Sans SC","Microsoft YaHei",sans-serif;
+  color:var(--ink);font-weight:800;
+  background:
+    radial-gradient(circle at 12% 18%,#FFD18A 0 9vmin,transparent 9.2vmin),
+    radial-gradient(circle at 88% 12%,#FFC470 0 6vmin,transparent 6.2vmin),
+    radial-gradient(circle at 92% 85%,#FFD18A 0 11vmin,transparent 11.2vmin),
+    radial-gradient(circle at 6% 90%,#FFC470 0 7vmin,transparent 7.2vmin),
+    linear-gradient(160deg,var(--o1),var(--o2));
+}
+button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;
+  padding:max(2vmin,env(safe-area-inset-top)) max(3vmin,env(safe-area-inset-right)) max(2vmin,env(safe-area-inset-bottom)) max(3vmin,env(safe-area-inset-left))}
+.screen.on{display:flex}
+
+/* 通用按钮 */
+.btn{background:linear-gradient(180deg,#FFA726,var(--o5));color:#fff;border-radius:999px;
+  box-shadow:0 1vmin 0 var(--o6),0 2vmin 3vmin rgba(230,81,0,.3);transition:transform .1s, box-shadow .1s}
+.btn:active{transform:translateY(.7vmin);box-shadow:0 .3vmin 0 var(--o6)}
+.round{width:11vmin;height:11vmin;min-width:48px;min-height:48px;font-size:5.5vmin;display:grid;place-items:center;flex:none}
+
+/* 开始页 */
+#start{justify-content:center;gap:4vmin}
+.fox{font-size:30vmin;line-height:1;animation:bob 2.4s ease-in-out infinite;filter:drop-shadow(0 2vmin 2vmin rgba(230,81,0,.3))}
+@keyframes bob{50%{transform:translateY(-3vmin) rotate(4deg)}}
+h1{margin:0;font-size:9vmin;color:var(--o6);text-shadow:0 .6vmin 0 #fff;letter-spacing:.3vmin;text-align:center}
+.sub{font-size:4vmin;color:var(--o5)}
+#startBtn{font-size:8vmin;padding:3vmin 12vmin;animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.08)}}
+
+/* 顶栏 */
+.bar{width:100%;display:flex;align-items:center;gap:3vmin;flex:none;min-height:12vmin}
+.bar .title{flex:1;font-size:6.5vmin;color:var(--o6);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.total{background:#fff;border-radius:999px;padding:1.5vmin 3.5vmin;font-size:5vmin;color:var(--o5);box-shadow:0 .6vmin 0 var(--o3);flex:none}
+
+/* 主页 */
+.worlds{flex:1;width:100%;display:flex;align-items:center;justify-content:center;gap:4vmin;flex-wrap:wrap;align-content:center}
+.world{width:min(28vw,62vh);aspect-ratio:3/4;border-radius:6vmin;background:var(--card);
+  box-shadow:0 1.4vmin 0 var(--o3),0 3vmin 5vmin rgba(230,81,0,.22);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5vmin;
+  border:1vmin solid #fff;transition:transform .12s;position:relative;overflow:hidden}
+.world::before{content:"";position:absolute;inset:0 0 55% 0;background:var(--wc);border-radius:0 0 50% 50%/0 0 30% 30%}
+.world:active{transform:scale(.95)}
+.world .ico{font-size:min(15vw,30vh);line-height:1;position:relative;animation:bob 3s ease-in-out infinite}
+.world:nth-child(2) .ico{animation-delay:-1s}.world:nth-child(3) .ico{animation-delay:-2s}
+.world .nm{font-size:min(4.4vw,8vh);color:var(--o6);position:relative}
+.world .st{font-size:min(3vw,5.5vh);color:var(--o5);position:relative}
+@media (orientation:portrait){
+  .worlds{flex-direction:column;flex-wrap:nowrap}
+  .world{width:min(86vw,150vh);aspect-ratio:auto;height:24vh;flex-direction:row;gap:5vw;justify-content:flex-start;padding-left:6vw}
+  .world::before{inset:0 62% 0 0;border-radius:0 40% 40% 0/0 50% 50% 0}
+  .world .ico{font-size:15vh}.world .nm{font-size:7vw}.world .st{font-size:4.5vw}
+  .world .txt{display:flex;flex-direction:column;gap:1vh;align-items:flex-start}
+}
+.world .txt{display:contents}
+@media (orientation:portrait){.world .txt{display:flex}}
+
+/* 关卡页 */
+.levels{flex:1;width:100%;display:grid;grid-template-columns:repeat(3,auto);gap:4vmin 6vmin;place-content:center}
+@media (orientation:portrait){.levels{grid-template-columns:repeat(2,auto)}}
+.lv{--s:min(26vw,36vh);width:var(--s);height:var(--s);border-radius:5vmin;background:var(--card);border:.8vmin solid #fff;
+  box-shadow:0 1.2vmin 0 var(--o3),0 2.5vmin 4vmin rgba(230,81,0,.2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6vmin;position:relative;transition:transform .12s}
+@media (orientation:portrait){.lv{--s:min(40vw,24vh)}}
+.lv:active{transform:scale(.94)}
+.lv .n{position:absolute;top:-2vmin;left:-2vmin;width:8vmin;height:8vmin;border-radius:50%;background:var(--o4);color:#fff;display:grid;place-items:center;font-size:4.6vmin;box-shadow:0 .5vmin 0 var(--o6)}
+.lv .ico{font-size:calc(var(--s)*.4);line-height:1.1}
+.lv .nm{font-size:calc(var(--s)*.115);color:var(--o6)}
+.lv .st{font-size:calc(var(--s)*.12);letter-spacing:.3vmin}
+.lv .st i{font-style:normal;opacity:.22;filter:grayscale(1)}
+.lv .st i.on{opacity:1;filter:none}
+.lv.lock{filter:grayscale(.85);opacity:.6}
+.lv.lock .ico::after{content:"🔒";position:absolute;right:6%;bottom:22%;font-size:calc(var(--s)*.26)}
+.lv.next{animation:pulse 1.4s ease-in-out infinite;border-color:var(--o4)}
+
+/* 游戏页 */
+.dots{flex:1;display:flex;justify-content:center;gap:1.6vmin;flex-wrap:wrap}
+.dots i{width:4.4vmin;height:4.4vmin;border-radius:50%;background:#fff;box-shadow:inset 0 0 0 .7vmin var(--o3);transition:.3s}
+.dots i.on{background:var(--o4);box-shadow:inset 0 0 0 .7vmin var(--o5);transform:scale(1.15)}
+#stage{flex:1;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3vmin;min-height:0}
+.ask{display:flex;align-items:center;gap:3vmin;flex:none}
+.ask .q{background:#fff;border-radius:5vmin;padding:2vmin 5vmin;font-size:6vmin;color:var(--o6);box-shadow:0 .8vmin 0 var(--o3);position:relative}
+.replay{width:15vmin;height:15vmin;font-size:8vmin;animation:pulse 1.6s ease-in-out infinite}
+
+.choices{display:flex;flex-wrap:wrap;justify-content:center;align-content:center;gap:3.5vmin;width:100%;flex:1;min-height:0}
+.choice,.card{--cs:min(28vw,52vh);width:var(--cs);height:var(--cs);border-radius:5vmin;background:var(--card);border:.9vmin solid #fff;
+  box-shadow:0 1.2vmin 0 var(--o3),0 2.5vmin 4vmin rgba(230,81,0,.2);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;transition:transform .12s;flex:none}
+.choices.n4 .choice{--cs:min(21vw,48vh)}
+@media (orientation:portrait){
+  .choice{--cs:min(42vw,24vh)}
+  .choices.n2 .choice{--cs:min(60vw,30vh)}
+  .choices.n4 .choice{--cs:min(42vw,30vh)}
+}
+.choice:active,.card:active{transform:scale(.94)}
+.emo{font-size:calc(var(--cs)*.62);line-height:1.15}
+.choice svg,.card svg{width:72%;height:72%}
+.choice.right{border-color:var(--ok);background:#E8F5E9;animation:jump .6s}
+.choice.wrong{animation:shake .5s}
+.choice.dim{opacity:.35}
+@keyframes jump{30%{transform:translateY(-4vmin) scale(1.12)}60%{transform:translateY(0) scale(.96)}}
+@keyframes shake{20%,60%{transform:translateX(-2vmin) rotate(-4deg)}40%,80%{transform:translateX(2vmin) rotate(4deg)}}
+
+/* 探索卡片 */
+.grid{display:grid;grid-template-columns:repeat(4,auto);gap:3vmin;place-content:center;flex:1;min-height:0}
+.grid .card{--cs:min(21vw,36vh)}
+@media (orientation:portrait){.grid{grid-template-columns:repeat(2,auto)}.grid .card{--cs:min(42vw,19vh)}}
+.card .emo{font-size:calc(var(--cs)*.56)}
+.card .nm{font-size:calc(var(--cs)*.13);color:var(--o6)}
+.card.play{animation:jump .6s;border-color:var(--o4)}
+.card.seen::after{content:"⭐";position:absolute;top:-1.5vmin;right:-1.5vmin;font-size:calc(var(--cs)*.2)}
+.hint{font-size:4.6vmin;color:var(--o5);flex:none}
+
+/* 小钢琴 */
+.timbres{display:flex;gap:2.5vmin;flex:none;flex-wrap:wrap;justify-content:center}
+.tb{width:13vmin;height:13vmin;border-radius:3.5vmin;background:#fff;font-size:7.5vmin;box-shadow:0 .8vmin 0 var(--o3);display:grid;place-items:center;border:.8vmin solid #fff}
+.tb.on{border-color:var(--o4);background:#FFF3E0;transform:scale(1.1)}
+.keys{display:flex;gap:1.4vmin;width:100%;max-width:150vh;flex:1;min-height:0;max-height:52vh;padding:0 1vmin 2vmin}
+.key{flex:1;border-radius:1.5vmin 1.5vmin 4vmin 4vmin;background:var(--kc);box-shadow:0 1.6vmin 0 rgba(0,0,0,.22),inset 0 -6vmin 6vmin rgba(255,255,255,.25);
+  display:flex;align-items:flex-end;justify-content:center;padding-bottom:3vmin;font-size:4.5vmin;color:#fff;text-shadow:0 .3vmin 0 rgba(0,0,0,.25);touch-action:none;transition:transform .06s}
+.key.down{transform:translateY(1.4vmin) scaleY(.97);filter:brightness(1.2);box-shadow:0 .3vmin 0 rgba(0,0,0,.22)}
+.pianoBtns{display:flex;gap:3vmin;flex:none;align-items:center}
+.pill{font-size:4.6vmin;padding:2vmin 5vmin}
+
+/* 拖拽配对 */
+.targets,.tray{display:flex;justify-content:center;gap:5vmin;width:100%;flex:none}
+.target,.drag{--ds:min(24vw,30vh);width:var(--ds);height:var(--ds);flex:none;display:grid;place-items:center;position:relative}
+@media (orientation:portrait){.target,.drag{--ds:min(27vw,24vh)}}
+.n4>.target,.n4>.drag{--ds:min(19vw,30vh)}
+.targets.n4,.tray.n4{gap:3vmin}
+.target svg,.drag svg{width:88%;height:88%;pointer-events:none}
+.target.box{border-radius:4vmin 4vmin 8vmin 8vmin;border:1.4vmin solid var(--bc);background:color-mix(in srgb,var(--bc) 22%,#fff);box-shadow:0 1vmin 0 rgba(0,0,0,.12)}
+.target.box::before{content:"";position:absolute;top:-4.5vmin;left:22%;right:22%;height:7vmin;border:1.4vmin solid var(--bc);border-bottom:0;border-radius:50% 50% 0 0}
+.target.hover{transform:scale(1.08)}
+.target.done{animation:jump .6s}
+.drag{touch-action:none;cursor:grab;z-index:2;font-size:calc(var(--ds)*.7);line-height:1;filter:drop-shadow(0 1vmin 1vmin rgba(0,0,0,.2))}
+.drag.live{z-index:9;transform-origin:center;cursor:grabbing}
+.drag.back{transition:transform .35s cubic-bezier(.3,1.5,.5,1)}
+.drag.placed{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;filter:none}
+.target.box .drag.placed{font-size:calc(var(--ds)*.55)}
+.spacer{flex:none;height:4vmin}
+
+/* 完成弹层 */
+#done{position:absolute;inset:0;background:rgba(255,236,204,.9);display:none;flex-direction:column;align-items:center;justify-content:center;gap:4vmin;z-index:30}
+#done.on{display:flex}
+#done .big{font-size:22vmin;line-height:1;animation:bob 1.6s ease-in-out infinite}
+#done .msg{font-size:9vmin;color:var(--o6);text-shadow:0 .6vmin 0 #fff}
+#done .stars{font-size:15vmin;display:flex;gap:2vmin}
+#done .stars i{font-style:normal;opacity:.2;filter:grayscale(1);transform:scale(.4)}
+#done .stars i.on{opacity:1;filter:none;animation:starIn .6s cubic-bezier(.3,1.8,.5,1) both}
+@keyframes starIn{from{transform:scale(0) rotate(-180deg)}to{transform:scale(1)}}
+#done .row{display:flex;gap:6vmin}
+#done .round{width:17vmin;height:17vmin;font-size:9vmin}
+#done .go{width:22vmin;height:22vmin;font-size:12vmin;animation:pulse 1.2s ease-in-out infinite}
+
+.conf{position:fixed;top:-8vmin;font-size:6vmin;pointer-events:none;z-index:50;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(120vh) rotate(720deg)}}
+</style>
+</head>
+<body>
+
+<!-- 开始 -->
+<section id="start" class="screen on">
+  <div class="fox">🦊</div>
+  <h1>小狐狸启蒙乐园</h1>
+  <div class="sub">听一听 · 看一看 · 找一找</div>
+  <button id="startBtn" class="btn">▶ 开始玩</button>
+</section>
+
+<!-- 主页 -->
+<section id="home" class="screen">
+  <div class="bar">
+    <div style="font-size:9vmin">🦊</div>
+    <div class="title">你想玩什么呀？</div>
+    <div class="total" id="total">⭐ 0</div>
+  </div>
+  <div class="worlds" id="worlds"></div>
+</section>
+
+<!-- 关卡 -->
+<section id="levels" class="screen">
+  <div class="bar">
+    <button class="btn round" id="toHome">🏠</button>
+    <div class="title" id="worldTitle"></div>
+    <div style="width:11vmin"></div>
+  </div>
+  <div class="levels" id="levelGrid"></div>
+</section>
+
+<!-- 游戏 -->
+<section id="game" class="screen">
+  <div class="bar">
+    <button class="btn round" id="toLevels">⬅</button>
+    <div class="dots" id="dots"></div>
+    <div style="font-size:9vmin;width:11vmin;text-align:center">🦊</div>
+  </div>
+  <div id="stage"></div>
+  <div id="done">
+    <div class="big">🦊</div>
+    <div class="msg">太棒啦！</div>
+    <div class="stars" id="doneStars"></div>
+    <div class="row">
+      <button class="btn round" id="dList">🏠</button>
+      <button class="btn round" id="dAgain">🔁</button>
+      <button class="btn round go" id="dNext">➡</button>
+    </div>
+  </div>
+</section>
+
+<script>
+'use strict';
+const $ = s => document.querySelector(s);
+const rnd = n => Math.floor(Math.random() * n);
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const sample = (a, n) => shuffle(a).slice(0, n);
+
+/* ================= 声音引擎 ================= */
+let AC, master, bus, noiseBuf;
+function audio() {
+  if (!AC) {
+    AC = new (window.AudioContext || window.webkitAudioContext)();
+    master = AC.createGain(); master.gain.value = 0.9; master.connect(AC.destination);
+    bus = AC.createGain(); bus.connect(master);
+    noiseBuf = AC.createBuffer(1, AC.sampleRate, AC.sampleRate);
+    const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  }
+  if (AC.state === 'suspended') AC.resume();
+  return AC;
+}
+function stopSound() {
+  if (!AC) return;
+  const old = bus; old.gain.setTargetAtTime(0, AC.currentTime, 0.02);
+  setTimeout(() => old.disconnect(), 200);
+  bus = AC.createGain(); bus.connect(master);
+}
+function shape(g, o, t) {
+  const vol = o.vol || 0.25;
+  g.gain.setValueAtTime(0.0001, t);
+  if (o.decay) {
+    g.gain.linearRampToValueAtTime(vol, t + (o.a || 0.006));
+    g.gain.exponentialRampToValueAtTime(0.0001, t + o.dur);
+  } else {
+    const a = Math.min(o.a || 0.015, o.dur / 2), r = Math.min(o.r || 0.05, o.dur / 2);
+    g.gain.linearRampToValueAtTime(vol, t + a);
+    g.gain.setValueAtTime(vol, t + o.dur - r);
+    g.gain.linearRampToValueAtTime(0.0001, t + o.dur);
+  }
+}
+function chain(src, o, t) {
+  const c = AC, g = c.createGain(); let node = src;
+  if (o.filt) {
+    const fl = c.createBiquadFilter(); fl.type = o.filt[0]; fl.frequency.setValueAtTime(o.filt[1], t); fl.Q.value = o.filt[2] || 1;
+    if (o.filt[3]) fl.frequency.exponentialRampToValueAtTime(o.filt[3], t + o.dur);
+    node.connect(fl); node = fl;
+  }
+  shape(g, o, t); node.connect(g); g.connect(o.sfx ? master : bus);
+}
+// o: {type, f:数字或数组(滑音), t:延迟秒, dur, vol, a, r, decay, vib, vibD, filt:[type,freq,Q,endFreq], sfx}
+function tone(o) {
+  const c = audio(), t = c.currentTime + (o.t || 0), osc = c.createOscillator();
+  osc.type = o.type || 'sine';
+  const f = [].concat(o.f); osc.frequency.setValueAtTime(f[0], t);
+  for (let i = 1; i < f.length; i++) osc.frequency.linearRampToValueAtTime(f[i], t + o.dur * i / (f.length - 1));
+  if (o.vib) {
+    const l = c.createOscillator(), lg = c.createGain(); l.frequency.value = o.vib; lg.gain.value = o.vibD || 10;
+    l.connect(lg); lg.connect(osc.frequency); l.start(t); l.stop(t + o.dur + 0.1);
+  }
+  chain(osc, o, t); osc.start(t); osc.stop(t + o.dur + 0.08);
+}
+function noise(o) {
+  const c = audio(), t = c.currentTime + (o.t || 0), s = c.createBufferSource();
+  s.buffer = noiseBuf; s.loop = true; chain(s, o, t); s.start(t, Math.random()); s.stop(t + o.dur + 0.08);
+}
+
+/* ---------- 语音 ---------- */
+let voice = null, sayTok = 0, timers = [];
+function pickVoice() {
+  if (!('speechSynthesis' in window)) return;
+  const vs = speechSynthesis.getVoices();
+  const zh = vs.filter(v => /zh[-_](CN|Hans)|cmn/i.test(v.lang));
+  voice = zh.find(v => /Tingting|婷婷|Xiaoxiao|晓晓|Google/i.test(v.name)) || zh[0] || vs.find(v => /^zh/i.test(v.lang)) || null;
+}
+if ('speechSynthesis' in window) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+function later(fn, ms) { const id = setTimeout(fn, ms); timers.push(id); return id; }
+function say(text, cb) {
+  const tok = ++sayTok; let fired = false;
+  const done = () => { if (fired || tok !== sayTok) return; fired = true; cb && cb(); };
+  if (!('speechSynthesis' in window)) { later(done, 600); return; }
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'zh-CN'; if (voice) u.voice = voice; u.rate = 0.85; u.pitch = 1.25;
+  u.onend = done; u.onerror = done;
+  speechSynthesis.speak(u);
+  later(done, 1500 + text.length * 420); // 兜底：语音不可用时也能继续
+}
+function clearAll() {
+  timers.forEach(clearTimeout); timers = []; sayTok++;
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  stopSound();
+}
+
+/* ---------- 音效 ---------- */
+const sfx = {
+  tap() { tone({ f: [700, 900], dur: 0.07, vol: 0.15, sfx: 1 }); },
+  yes() { [523, 659, 784, 1047].forEach((f, i) => tone({ type: 'triangle', f, t: i * 0.09, dur: 0.35, vol: 0.28, decay: 1, sfx: 1 })); },
+  no() { tone({ type: 'sine', f: [330, 250], dur: 0.25, vol: 0.2, sfx: 1 }); },
+  pop() { tone({ f: [400, 1100], dur: 0.1, vol: 0.22, sfx: 1 }); },
+  win() { [523, 523, 523, 659, 784, 1047].forEach((f, i) => tone({ type: 'triangle', f, t: [0, .15, .3, .45, .62, .8][i], dur: i > 4 ? 0.9 : 0.3, vol: 0.3, decay: 1, sfx: 1 })); }
+};
+
+/* ================= 动物 ================= */
+const saw = 'sawtooth', sq = 'square';
+const ANIMALS = [
+  { k: 'dog', e: '🐶', n: '小狗', o: '汪汪汪', s() { [0, .28, .56].forEach(t => { tone({ type: saw, f: [520, 380, 240], t, dur: .16, vol: .32, filt: ['bandpass', 900, 1.5] }); noise({ t, dur: .12, vol: .1, filt: ['bandpass', 1200, 1] }); }); return .8; } },
+  { k: 'cat', e: '🐱', n: '小猫', o: '喵——喵——', s() { [0, .85].forEach(t => tone({ type: saw, f: [620, 920, 860, 560], t, dur: .7, vol: .2, a: .08, r: .2, filt: ['bandpass', 1500, 3] })); return 1.6; } },
+  { k: 'cow', e: '🐮', n: '奶牛', o: '哞——', s() { tone({ type: saw, f: [120, 150, 145, 105], dur: 1.4, vol: .4, a: .15, r: .3, filt: ['lowpass', 650, 3] }); return 1.5; } },
+  { k: 'duck', e: '🦆', n: '小鸭子', o: '嘎嘎嘎', s() { [0, .22, .44, .66].forEach(t => tone({ type: sq, f: [560, 430], t, dur: .14, vol: .22, filt: ['bandpass', 1300, 6] })); return .9; } },
+  { k: 'sheep', e: '🐑', n: '小羊', o: '咩——', s() { tone({ type: saw, f: [480, 460, 420], dur: 1.0, vol: .25, a: .05, r: .2, vib: 22, vibD: 45, filt: ['bandpass', 1300, 2] }); return 1.1; } },
+  { k: 'pig', e: '🐷', n: '小猪', o: '哼哼哼', s() { [0, .3, .6].forEach(t => { tone({ type: saw, f: [95, 130, 85], t, dur: .2, vol: .4, vib: 40, vibD: 25, filt: ['lowpass', 700, 4] }); noise({ t, dur: .2, vol: .12, filt: ['bandpass', 500, 2] }); }); return .9; } },
+  { k: 'chick', e: '🐥', n: '小鸡', o: '叽叽叽', s() { [0, .18, .36, .54, .72].forEach(t => tone({ f: [2600, 3600, 2900], t, dur: .1, vol: .2 })); return .9; } },
+  { k: 'rooster', e: '🐓', n: '大公鸡', o: '喔喔喔——', s() { tone({ type: saw, f: [520, 760], dur: .2, vol: .22, filt: ['bandpass', 1600, 3] }); tone({ type: saw, f: [700, 780], t: .26, dur: .16, vol: .22, filt: ['bandpass', 1600, 3] }); tone({ type: saw, f: [760, 880, 860, 520], t: .5, dur: .9, vol: .24, r: .3, vib: 9, vibD: 20, filt: ['bandpass', 1600, 3] }); return 1.5; } },
+  { k: 'frog', e: '🐸', n: '青蛙', o: '呱呱呱', s() { [0, .4, .8].forEach(t => { for (let i = 0; i < 5; i++) tone({ type: sq, f: [190, 330], t: t + i * .045, dur: .04, vol: .2, filt: ['bandpass', 800, 3] }); }); return 1.1; } },
+  { k: 'bird', e: '🐦', n: '小鸟', o: '啾啾啾', s() { [0, .14, .28, .55, .69, .83].forEach((t, i) => tone({ f: i % 3 === 2 ? [3200, 2200] : [2200, 3400], t, dur: .11, vol: .18 })); return 1.0; } },
+  { k: 'lion', e: '🦁', n: '大狮子', o: '嗷——呜', s() { tone({ type: saw, f: [70, 110, 95, 60], dur: 1.5, vol: .4, a: .2, r: .5, vib: 30, vibD: 14, filt: ['lowpass', 500, 2] }); noise({ dur: 1.5, vol: .28, a: .2, r: .6, filt: ['lowpass', 700, 1, 250] }); return 1.6; } },
+  { k: 'elephant', e: '🐘', n: '大象', o: '呜——', s() { tone({ type: saw, f: [380, 720, 760, 600], dur: 1.1, vol: .2, a: .06, r: .25, vib: 28, vibD: 30, filt: ['bandpass', 1400, 2] }); return 1.2; } },
+  { k: 'monkey', e: '🐵', n: '小猴子', o: '吱吱吱', s() { [0, .14, .28, .42, .56, .7].forEach((t, i) => tone({ type: sq, f: [600 + i * 60, 1200 + i * 60], t, dur: .1, vol: .13, filt: ['bandpass', 1800, 2] })); return .9; } },
+  { k: 'owl', e: '🦉', n: '猫头鹰', o: '咕咕，咕——', s() { [[0, .22], [.32, .22], [.75, .6]].forEach(([t, d]) => tone({ f: [400, 380, 350], t, dur: d, vol: .35, a: .04, r: .1 })); return 1.4; } },
+  { k: 'bee', e: '🐝', n: '小蜜蜂', o: '嗡嗡嗡', s() { tone({ type: saw, f: [210, 250, 200, 240, 215], dur: 1.2, vol: .22, a: .1, r: .2, vib: 60, vibD: 18, filt: ['lowpass', 1400, 2] }); return 1.3; } },
+  { k: 'wolf', e: '🐺', n: '大灰狼', o: '嗷呜——', s() { tone({ type: 'triangle', f: [300, 560, 600, 580, 380], dur: 1.7, vol: .32, a: .15, r: .5, vib: 5, vibD: 8 }); return 1.8; } },
+];
+const FARM = ANIMALS.slice(0, 8), WILD = ANIMALS.slice(8);
+
+/* ================= 乐器 ================= */
+const mf = m => 440 * Math.pow(2, (m - 69) / 12);
+const NOTE = {
+  piano(f, t, d) { tone({ type: 'triangle', f, t, dur: Math.max(d, 1), vol: .38, decay: 1 }); tone({ f: f * 2, t, dur: .6, vol: .1, decay: 1 }); },
+  trumpet(f, t, d) { tone({ type: saw, f, t, dur: d * .92, vol: .2, a: .04, r: .06, filt: ['lowpass', 2400, 3] }); },
+  violin(f, t, d) { tone({ type: saw, f, t, dur: d * 1.05, vol: .17, a: .12, r: .14, vib: 6, vibD: f * .012, filt: ['lowpass', 3400, 1] }); },
+  flute(f, t, d) { tone({ f: f * 2, t, dur: d * .95, vol: .3, a: .07, r: .08, vib: 5, vibD: f * .012 }); noise({ t, dur: d * .9, vol: .015, a: .05, filt: ['bandpass', f * 4, 2] }); },
+  guitar(f, t, d) { tone({ type: saw, f: f / 2, t, dur: Math.max(d, 1.1), vol: .4, decay: 1, filt: ['lowpass', 2600, 2, 300] }); },
+  bell(f, t) { [1, 2.76, 5.4].forEach((m, i) => tone({ f: f * 2 * m, t, dur: 1.5 / (i + 1), vol: .24 / (i + 1), decay: 1 })); },
+};
+const kick = t => tone({ f: [160, 45], t, dur: .28, vol: .7, decay: 1 });
+const snare = t => { noise({ t, dur: .16, vol: .35, decay: 1, filt: ['highpass', 1500] }); tone({ type: 'triangle', f: [240, 150], t, dur: .1, vol: .25, decay: 1 }); };
+const shake = (t, d = .07) => noise({ t, dur: d, vol: .3, a: .02, r: .03, filt: ['highpass', 5200] });
+const SONGS = [
+  [[60, 1], [60, 1], [67, 1], [67, 1], [69, 1], [69, 1], [67, 2]],            // 小星星
+  [[60, 1], [62, 1], [64, 1], [60, 1], [60, 1], [62, 1], [64, 1], [60, 1]],   // 两只老虎
+  [[64, 1], [64, 1], [65, 1], [67, 1], [67, 1], [65, 1], [64, 1], [62, 1]],   // 欢乐颂
+];
+function playSong(kind, song, beat = .36, onNote) {
+  let t = 0.02;
+  song.forEach(([m, b], i) => { NOTE[kind](mf(m), t, b * beat); if (onNote) later(() => onNote(m, i), t * 1000); t += b * beat; });
+  return t + .4;
+}
+const melodic = kind => () => playSong(kind, SONGS[rnd(SONGS.length)]);
+const INSTR = [
+  { k: 'piano', e: '🎹', n: '钢琴', s: melodic('piano') },
+  { k: 'drum', e: '🥁', n: '小鼓', s() { [0, .5, .75].forEach(kick); [.25, 1.0, 1.25].forEach(snare); kick(1.5); snare(1.5); return 1.9; } },
+  { k: 'trumpet', e: '🎺', n: '小号', s: melodic('trumpet') },
+  { k: 'violin', e: '🎻', n: '小提琴', s: melodic('violin') },
+  { k: 'guitar', e: '🎸', n: '吉他', s: melodic('guitar') },
+  { k: 'flute', e: '🪈', n: '笛子', s: melodic('flute') },
+  { k: 'bell', e: '🔔', n: '铃铛', s: melodic('bell') },
+  { k: 'maraca', e: '🪇', n: '沙锤', s() { [0, .2, .4, .6, .8, 1.0, 1.1, 1.2, 1.4].forEach(t => shake(t)); shake(1.6, .25); return 2.0; } },
+];
+
+/* ================= 颜色与形状 ================= */
+const COLORS = [
+  { k: 'red', n: '红色', c: '#F44336' }, { k: 'yellow', n: '黄色', c: '#FFD600' }, { k: 'blue', n: '蓝色', c: '#2196F3' },
+  { k: 'green', n: '绿色', c: '#4CAF50' }, { k: 'orange', n: '橙色', c: '#FF9100' }, { k: 'purple', n: '紫色', c: '#9C27B0' },
+  { k: 'pink', n: '粉色', c: '#FF80AB' }, { k: 'brown', n: '棕色', c: '#8D6E63' },
+];
+const starPts = (() => { let p = []; for (let i = 0; i < 10; i++) { const r = i % 2 ? 20 : 46, a = Math.PI * i / 5 - Math.PI / 2; p.push((50 + r * Math.cos(a)).toFixed(1) + ',' + (53 + r * Math.sin(a)).toFixed(1)); } return p.join(' '); })();
+const SHAPES = [
+  { k: 'circle', n: '圆形', d: '<circle cx="50" cy="50" r="42"/>' },
+  { k: 'square', n: '正方形', d: '<rect x="10" y="10" width="80" height="80" rx="7"/>' },
+  { k: 'triangle', n: '三角形', d: '<polygon points="50,10 93,88 7,88"/>' },
+  { k: 'star', n: '星形', d: `<polygon points="${starPts}"/>` },
+  { k: 'heart', n: '心形', d: '<path d="M50 90 C18 66 5 48 5 31 A22.5 22.5 0 0 1 50 26 A22.5 22.5 0 0 1 95 31 C95 48 82 66 50 90Z"/>' },
+  { k: 'rect', n: '长方形', d: '<rect x="5" y="24" width="90" height="52" rx="6"/>' },
+  { k: 'diamond', n: '菱形', d: '<polygon points="50,5 90,50 50,95 10,50"/>' },
+  { k: 'oval', n: '椭圆形', d: '<ellipse cx="50" cy="50" rx="46" ry="30"/>' },
+];
+const svg = (sh, color, hole) => `<svg viewBox="0 0 100 100"><g fill="${hole ? 'rgba(107,58,0,.13)' : color}" stroke="${hole ? 'rgba(107,58,0,.45)' : 'rgba(0,0,0,.18)'}" stroke-width="3" stroke-linejoin="round" ${hole ? 'stroke-dasharray="6 5"' : ''}>${sh.d}</g></svg>`;
+const blob = c => `<svg viewBox="0 0 100 100"><path fill="${c}" stroke="rgba(0,0,0,.15)" stroke-width="3" d="M50 6c22 0 42 14 43 38s-14 48-41 49S6 76 7 50 26 6 50 6Z"/><ellipse cx="36" cy="30" rx="12" ry="7" fill="#fff" opacity=".45" transform="rotate(-30 36 30)"/></svg>`;
+const THINGS = [
+  { e: '🍓', n: '草莓', c: 'red' }, { e: '🍎', n: '苹果', c: 'red' }, { e: '🍌', n: '香蕉', c: 'yellow' }, { e: '🐥', n: '小鸡', c: 'yellow' },
+  { e: '🐳', n: '鲸鱼', c: 'blue' }, { e: '🦋', n: '蝴蝶', c: 'blue' }, { e: '🐸', n: '青蛙', c: 'green' }, { e: '🥦', n: '西兰花', c: 'green' },
+  { e: '🍊', n: '橘子', c: 'orange' }, { e: '🥕', n: '胡萝卜', c: 'orange' }, { e: '🍇', n: '葡萄', c: 'purple' }, { e: '🍆', n: '茄子', c: 'purple' },
+];
+
+/* ================= 进度 ================= */
+const KEY = 'fox-garden-v1';
+let P = { a: [], m: [], c: [], all: false };
+try { Object.assign(P, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(P)); } catch (e) {} };
+
+/* ================= 玩法引擎 ================= */
+const stage = $('#stage'), dots = $('#dots');
+let cur = { w: null, i: 0 };
+function setDots(n, total) { dots.innerHTML = Array.from({ length: total }, (_, i) => `<i class="${i < n ? 'on' : ''}"></i>`).join(''); }
+function confetti(n = 14) {
+  const set = ['⭐', '🎉', '🧡', '🌟', '🎈', '🍊'];
+  for (let i = 0; i < n; i++) {
+    const d = document.createElement('div'); d.className = 'conf'; d.textContent = set[rnd(set.length)];
+    d.style.left = rnd(96) + 'vw'; d.style.animationDuration = (1.6 + Math.random() * 1.6) + 's'; d.style.animationDelay = Math.random() * .4 + 's';
+    document.body.appendChild(d); setTimeout(() => d.remove(), 4000);
+  }
+}
+const PRAISE = ['对啦！', '真棒！', '答对了！', '好厉害！', '太聪明了！'];
+const praise = () => PRAISE[rnd(PRAISE.length)];
+function bag(pool) { let b = []; return () => { if (!b.length) b = shuffle(pool); return b.pop(); }; }
+
+function finish(stars) {
+  clearAll();
+  const arr = P[cur.w.id]; arr[cur.i] = Math.max(arr[cur.i] || 0, stars); save();
+  $('#doneStars').innerHTML = [0, 1, 2].map(i => `<i class="${i < stars ? 'on' : ''}" style="animation-delay:${i * .25}s">⭐</i>`).join('');
+  $('#dNext').style.display = cur.i + 1 < cur.w.levels.length ? '' : 'none';
+  $('#done').classList.add('on');
+  sfx.win(); confetti(30);
+  later(() => say(['太棒啦！你得到了三颗星星！', '真不错！你得到了两颗星星！', '完成啦！你得到了一颗星星！'][3 - stars]), 900);
+}
+
+/* 选择题：cfg.rounds, cfg.gen() -> {text, choices:[{k,html,n}], answer, ask(), ok} */
+function runQuiz(cfg) {
+  let r = 0, miss = 0;
+  (function next() {
+    clearAll();
+    if (r >= cfg.rounds) return finish(miss <= 1 ? 3 : miss <= 4 ? 2 : 1);
+    setDots(r, cfg.rounds);
+    const q = cfg.gen();
+    stage.innerHTML = `<div class="ask"><button class="btn round replay">🔊</button><div class="q">${q.text}</div></div>
+      <div class="choices n${q.choices.length}">${q.choices.map(c => `<button class="choice" data-k="${c.k}">${c.html}</button>`).join('')}</div>`;
+    let lock = false;
+    stage.querySelector('.replay').onclick = () => { if (lock) return; clearAll(); q.ask(); };
+    stage.querySelectorAll('.choice').forEach((b, i) => b.onclick = () => {
+      if (lock) return;
+      clearAll();
+      if (b.dataset.k === q.answer) {
+        lock = true; r++; setDots(r, cfg.rounds);
+        b.classList.add('right'); stage.querySelectorAll('.choice').forEach(x => x !== b && x.classList.add('dim'));
+        sfx.yes(); confetti(10);
+        later(() => say(praise() + q.ok, () => later(next, 500)), 450);
+      } else {
+        miss++; b.classList.remove('wrong'); void b.offsetWidth; b.classList.add('wrong'); sfx.no();
+        const c = q.choices[i];
+        later(() => say(c.n ? `这是${c.n}，再找一找` : '再找一找'), 300);
+      }
+    });
+    later(q.ask, 450);
+  })();
+}
+
+/* 自由探索：点一点听一听 */
+function runExplore(items, hint, play) {
+  setDots(0, items.length);
+  stage.innerHTML = `<div class="hint">${hint}</div><div class="grid">${items.map((a, i) => `<button class="card" data-i="${i}"><span class="emo">${a.e}</span><span class="nm">${a.n}</span></button>`).join('')}</div>`;
+  const seen = new Set();
+  stage.querySelectorAll('.card').forEach(b => b.onclick = () => {
+    clearAll();
+    const a = items[+b.dataset.i];
+    b.classList.remove('play'); void b.offsetWidth; b.classList.add('play', 'seen');
+    seen.add(a.k); setDots(seen.size, items.length);
+    const ms = play(a);
+    if (seen.size === items.length) later(() => finish(3), ms + 1800);
+  });
+  later(() => say(hint), 400);
+}
+
+/* 拖拽配对：cfg.rounds, cfg.gen() -> {text, pairs:[{k,item,target,box,ok}]} */
+function runMatch(cfg) {
+  let r = 0, miss = 0;
+  (function next() {
+    clearAll();
+    if (r >= cfg.rounds) return finish(miss <= 1 ? 3 : miss <= 4 ? 2 : 1);
+    setDots(r, cfg.rounds);
+    const q = cfg.gen(); let left = q.pairs.length;
+    stage.innerHTML = `<div class="ask"><div class="q">${q.text}</div></div>
+      <div class="targets n${left}">${shuffle(q.pairs).map(p => `<div class="target ${p.box ? 'box' : ''}" data-k="${p.k}" style="--bc:${p.box || ''}">${p.target || ''}</div>`).join('')}</div>
+      <div class="spacer"></div>
+      <div class="tray n${left}">${shuffle(q.pairs).map((p, i) => `<div class="drag" data-k="${p.k}" data-ok="${p.ok}">${p.item}</div>`).join('')}</div>`;
+    stage.querySelectorAll('.drag').forEach(el => {
+      let sx, sy, on = false;
+      const targetAt = (x, y) => document.elementsFromPoint(x, y).find(n => n.classList && n.classList.contains('target') && !n.classList.contains('done'));
+      el.onpointerdown = e => {
+        if (el.classList.contains('placed')) return;
+        on = true; sx = e.clientX; sy = e.clientY; el.setPointerCapture(e.pointerId);
+        el.classList.remove('back'); el.classList.add('live'); sfx.tap();
+      };
+      el.onpointermove = e => {
+        if (!on) return;
+        el.style.transform = `translate(${e.clientX - sx}px,${e.clientY - sy}px) scale(1.12)`;
+        const t = targetAt(e.clientX, e.clientY);
+        stage.querySelectorAll('.target').forEach(n => n.classList.toggle('hover', n === t));
+      };
+      el.onpointerup = el.onpointercancel = e => {
+        if (!on) return; on = false;
+        stage.querySelectorAll('.target').forEach(n => n.classList.remove('hover'));
+        const t = targetAt(e.clientX, e.clientY);
+        el.classList.remove('live');
+        if (t && t.dataset.k === el.dataset.k) {
+          clearAll();
+          el.style.transform = ''; el.classList.add('placed'); t.appendChild(el); t.classList.add('done');
+          if (!t.classList.contains('box')) { const s = t.querySelector('svg'); if (s) s.style.display = 'none'; }
+          sfx.pop(); left--;
+          if (left === 0) {
+            r++; setDots(r, cfg.rounds); sfx.yes(); confetti(10);
+            later(() => say(el.dataset.ok + '。' + praise(), () => later(next, 500)), 400);
+          } else later(() => say(el.dataset.ok), 150);
+        } else {
+          if (t) { miss++; sfx.no(); clearAll(); later(() => say('不是这里，再试试'), 200); }
+          el.classList.add('back'); el.style.transform = '';
+        }
+      };
+    });
+    later(() => say(q.text), 450);
+  })();
+}
+
+/* 小钢琴 */
+function runPiano() {
+  const scale = [60, 62, 64, 65, 67, 69, 71, 72], names = ['do', 're', 'mi', 'fa', 'sol', 'la', 'si', 'do'];
+  const kc = ['#F44336', '#FF9100', '#FFC400', '#4CAF50', '#00ACC1', '#2196F3', '#9C27B0', '#F06292'];
+  const kinds = [['piano', '🎹'], ['bell', '🔔'], ['trumpet', '🎺'], ['violin', '🎻'], ['flute', '🪈'], ['guitar', '🎸']];
+  let kind = 'piano', count = 0; const need = 12;
+  setDots(0, need);
+  stage.innerHTML = `<div class="timbres">${kinds.map(([k, e], i) => `<button class="tb ${i ? '' : 'on'}" data-k="${k}">${e}</button>`).join('')}</div>
+    <div class="keys">${scale.map((m, i) => `<div class="key" data-m="${m}" style="--kc:${kc[i]}">${names[i]}</div>`).join('')}</div>
+    <div class="pianoBtns"><button class="btn pill" id="song">🎵 听小星星</button><button class="btn pill" id="pdone" style="display:none">✅ 玩好啦</button></div>`;
+  const keyEl = m => stage.querySelector(`.key[data-m="${m}"]`);
+  const flash = m => { const k = keyEl(m); if (!k) return; k.classList.add('down'); setTimeout(() => k.classList.remove('down'), 220); };
+  stage.querySelectorAll('.tb').forEach(b => b.onclick = () => {
+    kind = b.dataset.k; stage.querySelectorAll('.tb').forEach(x => x.classList.toggle('on', x === b));
+    clearAll(); const ins = INSTR.find(x => x.k === kind); say(ins.n, () => NOTE[kind](mf(60), 0, .5));
+  });
+  stage.querySelectorAll('.key').forEach(k => {
+    const hit = e => {
+      e.preventDefault(); audio(); NOTE[kind](mf(+k.dataset.m), 0, .45); flash(+k.dataset.m);
+      count++; setDots(Math.min(count, need), need);
+      if (count === need) { $('#pdone').style.display = ''; confetti(8); }
+    };
+    k.onpointerdown = hit;
+    k.onpointerenter = e => { if (e.buttons || e.pointerType === 'touch') hit(e); };
+  });
+  stage.querySelector('.keys').onpointerdown = e => { try { e.target.releasePointerCapture(e.pointerId); } catch (_) {} };
+  $('#song').onclick = () => { clearAll(); playSong(kind, SONGS[0].concat([[65, 1], [65, 1], [64, 1], [64, 1], [62, 1], [62, 1], [60, 2]]), .42, flash); };
+  $('#pdone').onclick = () => finish(3);
+  later(() => say('按一按彩色的琴键，弹一首歌吧！'), 400);
+}
+
+/* ================= 关卡定义 ================= */
+const emoHtml = a => `<span class="emo">${a.e}</span>`;
+const playAnimal = a => { const d = a.s() * 1000; later(() => say(`${a.n}，${a.o}`), d + 120); return d + 2200; };
+const playInstr = a => { let d = 2500; say(a.n, () => { a.s(); }); return d + 1800; };
+
+function nameQuiz(pool, n, rounds) { // 听名字找图
+  const pick = bag(pool);
+  return () => runQuiz({ rounds, gen() {
+    const a = pick(), ch = shuffle([a, ...sample(pool.filter(x => x !== a), n - 1)]);
+    return { text: `${a.n}在哪里？`, answer: a.k, ok: `这是${a.n}`, ask: () => say(`${a.n}在哪里？`),
+      choices: ch.map(x => ({ k: x.k, n: x.n, html: emoHtml(x) })) };
+  } });
+}
+function soundQuiz(pool, n, rounds, kind) { // 听声音找图
+  const pick = bag(pool), isA = kind === 'a';
+  return () => runQuiz({ rounds, gen() {
+    const a = pick(), ch = shuffle([a, ...sample(pool.filter(x => x !== a), n - 1)]);
+    const text = isA ? '谁在叫？' : '这是什么乐器？';
+    return { text, answer: a.k, ok: isA ? `是${a.n}，${a.o}` : `这是${a.n}`,
+      ask: () => say('听一听，' + text, () => { const d = a.s(); if (isA) later(() => say(a.o), d * 1000 + 150); }),
+      choices: ch.map(x => ({ k: x.k, n: x.n, html: emoHtml(x) })) };
+  } });
+}
+function colorQuiz(pool, n, rounds) {
+  const pick = bag(pool);
+  return () => runQuiz({ rounds, gen() {
+    const a = pick(), ch = shuffle([a, ...sample(pool.filter(x => x !== a), n - 1)]);
+    return { text: `${a.n}在哪里？`, answer: a.k, ok: `这是${a.n}`, ask: () => say(`${a.n}在哪里？`),
+      choices: ch.map(x => ({ k: x.k, n: x.n, html: blob(x.c) })) };
+  } });
+}
+function shapeQuiz(pool, n, rounds) {
+  const pick = bag(pool);
+  return () => runQuiz({ rounds, gen() {
+    const a = pick(), ch = shuffle([a, ...sample(pool.filter(x => x !== a), n - 1)]);
+    return { text: `${a.n}在哪里？`, answer: a.k, ok: `这是${a.n}`, ask: () => say(`${a.n}在哪里？`),
+      choices: ch.map(x => ({ k: x.k, n: x.n, html: svg(x, COLORS[rnd(6)].c) })) };
+  } });
+}
+function comboQuiz(rounds) { // 红色的圆形
+  return () => runQuiz({ rounds, gen() {
+    const cs = sample(COLORS.slice(0, 6), 2), ss = sample(SHAPES.slice(0, 5), 2);
+    const all = shuffle([[0, 0], [0, 1], [1, 0], [1, 1]]).map(([c, s]) => ({ c: cs[c], s: ss[s] }));
+    const a = all[rnd(4)], nm = x => `${x.c.n}的${x.s.n}`;
+    return { text: `${nm(a)}在哪里？`, answer: a.c.k + a.s.k, ok: `这是${nm(a)}`, ask: () => say(`${nm(a)}在哪里？`),
+      choices: all.map(x => ({ k: x.c.k + x.s.k, n: nm(x), html: svg(x.s, x.c.c) })) };
+  } });
+}
+function oddQuiz(rounds) { // 找不同
+  return () => runQuiz({ rounds, gen() {
+    const [c1, c2] = sample(COLORS.slice(0, 6), 2), [s1, s2] = sample(SHAPES.slice(0, 6), 2), byColor = rnd(2);
+    const base = svg(s1, c1.c), odd = byColor ? svg(s1, c2.c) : svg(s2, c1.c), at = rnd(4);
+    return { text: '哪一个不一样？', answer: 'odd', ok: '它和别的不一样', ask: () => say('找一找，哪一个不一样？'),
+      choices: [0, 1, 2, 3].map(i => ({ k: i === at ? 'odd' : 'same' + i, html: i === at ? odd : base })) };
+  } });
+}
+function shapeMatch(pool, n, rounds) {
+  return () => runMatch({ rounds, gen() {
+    return { text: '把形状送回家', pairs: sample(pool, n).map(s => ({ k: s.k, item: svg(s, COLORS[rnd(6)].c), target: svg(s, '', 1), ok: s.n })) };
+  } });
+}
+function colorMatch(n, rounds) {
+  return () => runMatch({ rounds, gen() {
+    const cs = sample(COLORS.slice(0, 6), n);
+    return { text: '放进一样颜色的篮子', pairs: cs.map(c => { const t = sample(THINGS.filter(x => x.c === c.k), 1)[0]; return { k: c.k, item: t.e, box: c.c, ok: `${c.n}的${t.n}` }; }) };
+  } });
+}
+
+const WORLDS = [
+  { id: 'a', name: '动物叫声', icon: '🐶', wc: '#FFE0B2', intro: '动物叫声', levels: [
+    { name: '农场朋友', icon: '🐮', run: () => runExplore(FARM, '点一点，听听它们怎么叫', playAnimal) },
+    { name: '找一找', icon: '🔍', run: nameQuiz(FARM, 3, 6) },
+    { name: '谁在叫', icon: '👂', run: soundQuiz(FARM, 2, 6, 'a') },
+    { name: '森林朋友', icon: '🦁', run: () => runExplore(WILD, '点一点，听听它们怎么叫', playAnimal) },
+    { name: '森林音乐会', icon: '🌳', run: soundQuiz(WILD, 3, 6, 'a') },
+    { name: '动物大联欢', icon: '🎪', run: soundQuiz(ANIMALS, 4, 8, 'a') },
+  ] },
+  { id: 'm', name: '乐器音色', icon: '🎹', wc: '#FFD180', intro: '乐器音色', levels: [
+    { name: '认识乐器', icon: '🎺', run: () => runExplore(INSTR, '点一点，听听乐器的声音', playInstr) },
+    { name: '小小钢琴家', icon: '🎼', run: runPiano },
+    { name: '找乐器', icon: '🔍', run: nameQuiz(INSTR, 3, 6) },
+    { name: '听一听', icon: '👂', run: soundQuiz(INSTR.filter(x => ['piano', 'drum', 'trumpet', 'bell', 'maraca'].includes(x.k)), 2, 6, 'm') },
+    { name: '小小音乐会', icon: '🎶', run: soundQuiz(INSTR, 3, 6, 'm') },
+    { name: '金耳朵', icon: '🏆', run: soundQuiz(INSTR, 4, 8, 'm') },
+  ] },
+  { id: 'c', name: '颜色形状', icon: '🎨', wc: '#FFCC80', intro: '颜色和形状', levels: [
+    { name: '认颜色', icon: '🌈', run: colorQuiz(COLORS.slice(0, 6), 3, 6) },
+    { name: '认形状', icon: '🔺', run: shapeQuiz(SHAPES.slice(0, 5), 3, 6) },
+    { name: '形状回家', icon: '🏠', run: shapeMatch(SHAPES.slice(0, 5), 3, 4) },
+    { name: '颜色篮子', icon: '🧺', run: colorMatch(3, 4) },
+    { name: '颜色和形状', icon: '🟠', run: comboQuiz(6) },
+    { name: '找不同', icon: '🧐', run: oddQuiz(6) },
+    { name: '形状大挑战', icon: '⭐', run: shapeMatch(SHAPES, 4, 4) },
+    { name: '彩虹大师', icon: '👑', run: colorQuiz(COLORS, 4, 8) },
+  ] },
+];
+
+/* ================= 页面导航 ================= */
+function show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === id)); }
+const sumStars = w => (P[w.id] || []).reduce((a, b) => a + (b || 0), 0);
+function goHome(speak = true) {
+  clearAll(); $('#done').classList.remove('on');
+  $('#total').textContent = '⭐ ' + WORLDS.reduce((a, w) => a + sumStars(w), 0);
+  $('#worlds').innerHTML = WORLDS.map((w, i) => `<button class="world" data-i="${i}" style="--wc:${w.wc}"><span class="ico">${w.icon}</span><span class="txt"><span class="nm">${w.name}</span><span class="st">⭐ ${sumStars(w)} / ${w.levels.length * 3}</span></span></button>`).join('');
+  $('#worlds').querySelectorAll('.world').forEach(b => b.onclick = () => { sfx.tap(); goLevels(WORLDS[+b.dataset.i]); });
+  show('home');
+  if (speak) later(() => say('你想玩什么呀？'), 300);
+}
+function goLevels(w) {
+  clearAll(); $('#done').classList.remove('on'); cur.w = w;
+  const st = P[w.id]; let nextMarked = false;
+  $('#worldTitle').textContent = w.icon + ' ' + w.name;
+  $('#levelGrid').innerHTML = w.levels.map((l, i) => {
+    const open = P.all || i === 0 || st[i - 1] > 0, isNext = open && !st[i] && !nextMarked; if (isNext) nextMarked = true;
+    return `<button class="lv ${open ? '' : 'lock'} ${isNext ? 'next' : ''}" data-i="${i}"><span class="n">${i + 1}</span><span class="ico">${l.icon}</span><span class="nm">${l.name}</span>
+      <span class="st">${[0, 1, 2].map(k => `<i class="${k < (st[i] || 0) ? 'on' : ''}">⭐</i>`).join('')}</span></button>`;
+  }).join('');
+  $('#levelGrid').querySelectorAll('.lv').forEach(b => b.onclick = () => {
+    if (b.classList.contains('lock')) { sfx.no(); clearAll(); say('先玩前面的关卡吧'); return; }
+    sfx.tap(); startLevel(+b.dataset.i);
+  });
+  show('levels');
+  later(() => say(w.intro), 250);
+}
+function startLevel(i) {
+  clearAll(); cur.i = i; $('#done').classList.remove('on'); stage.innerHTML = ''; dots.innerHTML = '';
+  show('game'); cur.w.levels[i].run();
+}
+$('#startBtn').onclick = () => { audio(); pickVoice(); sfx.yes(); goHome(false); later(() => say('欢迎来到小狐狸启蒙乐园！你想玩什么呀？'), 400); };
+$('#toHome').onclick = () => { sfx.tap(); goHome(); };
+$('#toLevels').onclick = () => { sfx.tap(); goLevels(cur.w); };
+$('#dList').onclick = () => { sfx.tap(); goLevels(cur.w); };
+$('#dAgain').onclick = () => { sfx.tap(); startLevel(cur.i); };
+$('#dNext').onclick = () => { sfx.tap(); startLevel(cur.i + 1); };
+
+/* 家长功能：长按右上角星星 2 秒 → 解锁全部关卡；再长按一次恢复 */
+(() => {
+  let t; const el = $('#total');
+  el.onpointerdown = () => { t = setTimeout(() => { P.all = !P.all; save(); sfx.pop(); say(P.all ? '已解锁全部关卡' : '已恢复按顺序闯关'); }, 2000); };
+  el.onpointerup = el.onpointerleave = () => clearTimeout(t);
+})();
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('visibilitychange', () => { if (document.hidden) clearAll(); });
+</script>
+</body>
+</html>
